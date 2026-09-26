@@ -1,5 +1,8 @@
+import { useAtomValue } from 'jotai';
 import { BiSolidGift } from 'react-icons/bi';
+import { GiCheckMark } from 'react-icons/gi';
 
+import { selectedProductsAtom } from '@/atoms/productsAtom';
 import { css, cva } from 'styled-system/css';
 
 import type { ViewSkuDetailsRow } from '../products.dbTable.types';
@@ -18,6 +21,17 @@ const imgStyle = cva({
       t: { filter: 'grayscale(100%)' },
     },
   },
+});
+const checkStyle = css.raw({
+  pos: 'absolute',
+  zIndex: 1,
+  top: '0.75rem',
+  left: '0.75rem',
+  lineHeight: '1.75rem',
+  p: '1rem',
+  bgColor: 'emerald.50',
+  color: 'emerald.500',
+  borderRadius: 'full',
 });
 const markStyle = css.raw({
   pos: 'absolute',
@@ -39,6 +53,9 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
   imageUrl?: string;
   now: number;
 }) {
+  const selectedProducts = useAtomValue(selectedProductsAtom);
+  const isSelected = selectedProducts.some(product => product.sku_id === p.sku_id);
+
   const discontinued = p.discontinued_date
     ? p.now > new Date(p.discontinued_date).getTime() ? { discontinued: 't' } as const : undefined
     : undefined;
@@ -94,6 +111,9 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
                     },
                   })}
                 >
+                  {isSelected
+                    ? <span className={css(checkStyle)}><GiCheckMark strokeWidth="3.5rem" /></span>
+                    : null}
                   {discontinued?.discontinued === 't'
                     ? <mark className={css(markStyle)}>終売</mark>
                     : null}
@@ -166,7 +186,7 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
             <span>{p.product_name}</span>
             {p.case_quantity
               ? (
-                  <span className={css({ pos: 'absolute', display: 'inline-block', bottom: '0.025rem', right: '0.375rem',pointerEvents:'none', fontFamily: '"Time New Roman",sans-serif' })}>
+                  <span className={css({ pos: 'absolute', display: 'inline-block', bottom: '0.025rem', right: '0.375rem', pointerEvents: 'none', fontFamily: '"Time New Roman",sans-serif' })}>
                     {`[ ${p.case_quantity} ]`}
                   </span>
                 )
