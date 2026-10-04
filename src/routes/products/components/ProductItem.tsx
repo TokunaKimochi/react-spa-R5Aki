@@ -27,6 +27,8 @@ const checkStyle = css.raw({
   zIndex: 1,
   top: '0.75rem',
   left: '0.75rem',
+  fontSize: '1.125rem',
+  fontWeight: 'bold',
   lineHeight: '1.75rem',
   p: '1rem',
   bgColor: 'emerald.50',
@@ -152,6 +154,9 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
                   minH: '13rem',
                 }, dfnFontSize)}
                 >
+                  {isSelected
+                    ? <span className={css(checkStyle)}><GiCheckMark strokeWidth="3.5rem" /></span>
+                    : null}
                   {discontinued?.discontinued === 't'
                     ? <mark className={css(markStyle)}>終売</mark>
                     : null}

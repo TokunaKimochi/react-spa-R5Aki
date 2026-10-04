@@ -6,6 +6,8 @@ import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { selectedProductsAtom } from '@/atoms/productsAtom';
+import Input from '@/components/ui/elements/Input';
+import { css } from 'styled-system/css';
 
 import { viewSkuDetailsRowSchema } from './products.dbTable.schemas';
 
@@ -39,13 +41,19 @@ export default function SelectedProducts() {
   });
 
   return (
-    <div>
-      {productsArray.fields.map((p, i) => {
-        return (
-          // eslint-disable-next-line react/no-array-index-key
-          <div key={i}>{p.sku_name}</div>
-        );
-      })}
+    <div className={css({ h: '100lvh', display: 'grid', placeItems: 'center' })}>
+      <table>
+        <tbody>
+          {productsArray.fields.map((p, i) => {
+            return (
+              <tr key={p.id}>
+                <td><input readOnly {...methods.register(`products.${i}.sku_name` as const)} /></td>
+                <td><Input type="text" {...methods.register(`products.${i}.remark` as const)} /></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
