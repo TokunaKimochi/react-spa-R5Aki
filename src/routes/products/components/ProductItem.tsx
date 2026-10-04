@@ -60,6 +60,13 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
     ? p.now > new Date(p.discontinued_date).getTime() ? { discontinued: 't' } as const : undefined
     : undefined;
 
+  const len = [...p.sku_name].length;
+  const dfnFontSize = len < 9
+    ? css.raw({ fontSize: '3rem' })
+    : len < 13
+      ? css.raw({ fontSize: '2.5rem' })
+      : css.raw({ fontSize: '2rem' });
+
   return (
     <article
       className={css({
@@ -81,7 +88,7 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
         aria-expanded="false"
         onClick={() => p.setSelectedItem(p.index)}
         onKeyDown={() => p.setSelectedItem(p.index)}
-        className={css({ display: 'block', textAlign: 'left', w: '100%', h: 'fit-content', p: 0, cursor: 'pointer' })}
+        className={css({ display: 'grid', textAlign: 'left', w: '100%', h: '100%', p: 0, cursor: 'pointer' })}
       >
         <figure>
           {p.imageUrl?.startsWith('http')
@@ -138,14 +145,12 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
                   display: 'grid',
                   placeItems: 'center',
                   fontStyle: 'normal',
-                  fontSize: '3rem',
                   fontWeight: 'bold',
                   lineHeight: '3rem',
                   textWrap: 'balance',
                   textAlign: 'center',
                   minH: '13rem',
-                },
-                )}
+                }, dfnFontSize)}
                 >
                   {discontinued?.discontinued === 't'
                     ? <mark className={css(markStyle)}>終売</mark>
@@ -168,17 +173,22 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
           py: '0.725rem',
           fontSize: '0.85rem',
           fontWeight: 'bold',
+          alignSelf: 'last baseline',
 
           '& svg': { display: 'inline-block', mr: '0.125rem' },
         })}
         >
-          <h2 className={css({ fontSize: '1.25rem', fontWeight: 'bold' })}>
+          <h2 className={css({ display: 'flex', flexWrap: 'wrap', alignItems: 'center', fontSize: '1.25rem', fontWeight: 'bold' })}>
             <span className={css({ textShadow: 'rgba(255, 255, 255, 0.2) 1px 1px', transform: 'rotate(-7.5deg) translateY(-0.2rem)', display: 'inline-block' })}>
               {p.sku_name}
             </span>
-            <span className={css({ bgColor: 'var(--cat-color-light)', verticalAlign: 'super', fontSize: '0.625em', ml: '0.4em', px: '0.25em', py: '0.125em' })}>{p.display_category_name}</span>
-            <span className={css({ ml: '0.25rem' })}>
-              {p.max_piece_weight >= 1000 ? `${p.max_piece_weight / 1000}kg` : `${p.max_piece_weight}g`}
+            <span className={css({ flexGrow: 1, flexShrink: 0, minW: '3rem', containerType: 'inline-size', containerName: 'meta-box' })}>
+              <span className={css({ display: 'flex', alignItems: 'center', w: 'fit-content', maxW: '100%', justifyContent: 'flex-start', '@container meta-box (width >= 14rem)': { ml: 'auto', justifyContent: 'flex-end', w: '100%' } })}>
+                <span className={css({ h: '1.6em', lineHeight: '1.44em', bgColor: 'var(--cat-color-light)', verticalAlign: 'super', fontSize: '0.625em', ml: '0.4em', px: '0.25em', py: '0.125em' })}>{p.display_category_name}</span>
+                <span className={css({ ml: '0.25rem' })}>
+                  {p.max_piece_weight >= 1000 ? `${p.max_piece_weight / 1000}kg` : `${p.max_piece_weight}g`}
+                </span>
+              </span>
             </span>
           </h2>
           <p className={css({ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' })}>
