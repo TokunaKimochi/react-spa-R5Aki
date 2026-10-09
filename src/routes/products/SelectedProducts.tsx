@@ -7,6 +7,8 @@ import { z } from 'zod';
 
 import { selectedProductsAtom } from '@/atoms/productsAtom';
 import Input from '@/components/ui/elements/Input';
+import Select from '@/components/ui/elements/Select';
+import TextArea from '@/components/ui/elements/TextArea';
 import { css } from 'styled-system/css';
 
 import { viewSkuDetailsRowSchema } from './products.dbTable.schemas';
@@ -42,18 +44,45 @@ export default function SelectedProducts() {
 
   return (
     <div className={css({ h: '100lvh', display: 'grid', placeItems: 'center' })}>
-      <table>
-        <tbody>
-          {productsArray.fields.map((p, i) => {
-            return (
-              <tr key={p.id}>
-                <td><input readOnly {...methods.register(`products.${i}.sku_name` as const)} /></td>
-                <td><Input type="text" {...methods.register(`products.${i}.remark` as const)} /></td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <main>
+        {productsArray.fields.map((p, i) => {
+          return (
+            <div key={p.id}>
+              <div>
+                <input readOnly {...methods.register(`products.${i}.sku_name` as const)} />
+              </div>
+              <div className={css({
+                display: 'flex',
+                gap: '0.5rem',
+                alignItems: 'center',
+              })}
+              >
+                <Input
+                  type="number"
+                  placeholder="発注数"
+                  className={css({ w: '10.25rem' })}
+                />
+                <Select>
+                  <option key="Y" value="Y">年</option>
+                  <option key="M" value="M">月</option>
+                  <option key="D" value="D">日</option>
+                </Select>
+              </div>
+              <div>
+                <TextArea
+                  {...methods.register(`products.${i}.remark` as const)}
+                  id={`products.${i}.remark`}
+                  placeholder="備考"
+                  className={css({
+                    w: '34.5rem',
+                    h: '3.5rem',
+                  })}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </main>
     </div>
   );
 }
