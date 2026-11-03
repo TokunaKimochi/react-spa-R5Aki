@@ -21,6 +21,41 @@ const globalCss = defineGlobalStyles({
       backgroundPositionY: 'bottom',
       backgroundAttachment: 'scroll, scroll, fixed',
     },
+
+    '&:has(iframe.pdf-viewer)': {
+      backgroundColor: 'transparent',
+      backgroundImage: 'none',
+      margin: 0,
+      padding: 0,
+      height: '100vh',
+      overflow: 'hidden',
+
+      '& #root:has(> iframe)': {
+        position: 'relative',
+        width: '100%',
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#525659',
+
+        '& iframe': {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: 'fit-content',
+          border: 'none',
+          display: 'block',
+          aspectRatio: '297 / 210',
+          maxWidth: '100%',
+          maxHeight: '100vh',
+          margin: 0,
+          padding: 0,
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+        },
+      },
+    },
   },
 });
 

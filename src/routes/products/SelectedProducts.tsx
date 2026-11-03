@@ -1,13 +1,17 @@
 import type { SubmitHandler } from 'react-hook-form';
-import type { z } from 'zod';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { today } from '@internationalized/date';
 import { useAtomValue, useSetAtom } from 'jotai';
+import { useEffect } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { TbPencilPlus, TbTrash } from 'react-icons/tb';
+import { useNavigate } from 'react-router';
+
+import type { ProductsFormValues } from '@/atoms/purchaseOrderAtom';
 
 import { removeSelectedProductAtom, selectedProductsAtom } from '@/atoms/productsAtom';
+import { clearPurchaseOrderFormValuesAtom, purchaseOrderFormValuesAtom, savePurchaseOrderFormValuesAtom } from '@/atoms/purchaseOrderAtom';
 import ComboField from '@/components/ui/ComboField';
 import CommonDatePicker from '@/components/ui/CommonDatePicker';
 import Input from '@/components/ui/elements/Input';
@@ -21,47 +25,51 @@ import { css } from 'styled-system/css';
 import FloatingPdfButton from './components/FloatingPdfButton';
 import { productsStorageSchema } from './products.storage.schemas';
 
-type ProductsFormValues = z.infer<typeof productsStorageSchema>;
-
 export default function SelectedProducts() {
   const selectedProducts = useAtomValue(selectedProductsAtom);
   const removeProduct = useSetAtom(removeSelectedProductAtom);
+  const inputValues = useAtomValue(purchaseOrderFormValuesAtom);
+  const saveInputValues = useSetAtom(savePurchaseOrderFormValuesAtom);
+  const clearInputValues = useSetAtom(clearPurchaseOrderFormValuesAtom);
+  const navigate = useNavigate();
 
   const methods = useForm<ProductsFormValues>({
     mode: 'all',
     resolver: zodResolver(productsStorageSchema),
-    defaultValues: {
-      products: selectedProducts.map((p) => {
-        if (p.is_set_product) {
-          // --- セット商品（setSchema）の場合 ---
-          return {
-            sku_id: p.sku_id,
-            sku_name: p.sku_name,
-            components: false as const,
-            combinations: p.combinations.map(({ combination_id, item_product_short_name, quantity }) => ({
-              combination_id,
-              item_product_short_name,
-              quantity,
-            })),
-            delivery_date: null,
-          };
-        }
-        else {
-          // --- 通常商品（schema）の場合 ---
-          return {
-            sku_id: p.sku_id,
-            sku_name: p.sku_name,
-            components: p.components.map(({ component_id, amount, pieces }) => ({
-              component_id,
-              amount,
-              pieces,
-            })),
-            combinations: false as const,
-            delivery_date: null,
-          };
-        }
-      }),
-    },
+    defaultValues: inputValues
+      ? {}
+      : {
+          products: selectedProducts.map((p) => {
+            if (p.is_set_product) {
+              // --- セット商品（setSchema）の場合 ---
+              return {
+                sku_id: p.sku_id,
+                sku_name: p.sku_name,
+                components: false as const,
+                combinations: p.combinations.map(({ combination_id, item_product_short_name, quantity }) => ({
+                  combination_id,
+                  item_product_short_name,
+                  quantity,
+                })),
+                delivery_date: null,
+              };
+            }
+            else {
+              // --- 通常商品（schema）の場合 ---
+              return {
+                sku_id: p.sku_id,
+                sku_name: p.sku_name,
+                components: p.components.map(({ component_id, amount, pieces }) => ({
+                  component_id,
+                  amount,
+                  pieces,
+                })),
+                combinations: false as const,
+                delivery_date: null,
+              };
+            }
+          }),
+        },
     // 📢重要：アンマウントされたフィールドの値をフォームから除去
     shouldUnregister: true,
   });
@@ -71,13 +79,12 @@ export default function SelectedProducts() {
     rules: { minLength: 1, maxLength: 7 },
   });
 
-  const onSubmit: SubmitHandler<ProductsFormValues> = /* async */ (values)/* : Promise<void> */ => {
+  const onSubmit: SubmitHandler<ProductsFormValues> = (values) => {
     try {
-      console.log(values);
-      // https://github.com/remix-run/react-router/issues/12348
-      /* Promise.resolve(navigate(`/customers/${response.id}/decide`, { state: response })).catch((err: string) => {
+      saveInputValues(values);
+      Promise.resolve(navigate('/products/fax', { state: values })).catch((err: string) => {
         throw new Error(err);
-      }); */
+      });
     }
     catch (err: unknown) {
       console.error('💥💥💥 ', err, ' 💀💀💀');
@@ -85,6 +92,14 @@ export default function SelectedProducts() {
   };
 
   const productsErrors = methods.formState.errors.products;
+
+  useEffect(() => {
+    if (inputValues) {
+      methods.reset(inputValues);
+      clearInputValues();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 納品指定時間
   const specifiedTimes = [{
