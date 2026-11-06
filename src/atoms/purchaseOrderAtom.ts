@@ -7,7 +7,7 @@ import type { productsStorageSchema } from '@/routes/products/products.storage.s
 
 export type ProductsFormValues = z.infer<typeof productsStorageSchema>;
 
-const purchaseOrderStorage = createJSONStorage<ProductsFormValues | null>(() => window.sessionStorage);
+const purchaseOrderStorage = createJSONStorage<ProductsFormValues | null>(() => window.localStorage);
 
 const purchaseOrderFormValuesStorageAtom = atomWithStorage<ProductsFormValues | null>(
   'purchase-order-form-values:v1',
