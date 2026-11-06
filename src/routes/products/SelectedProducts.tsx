@@ -1,17 +1,14 @@
-import type { SubmitHandler } from 'react-hook-form';
-
 import { zodResolver } from '@hookform/resolvers/zod';
 import { today } from '@internationalized/date';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { useEffect } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { TbPencilPlus, TbTrash } from 'react-icons/tb';
-import { useNavigate } from 'react-router';
+import { Link } from 'react-router';
 
 import type { ProductsFormValues } from '@/atoms/purchaseOrderAtom';
 
 import { removeSelectedProductAtom, selectedProductsAtom } from '@/atoms/productsAtom';
-import { clearPurchaseOrderFormValuesAtom, purchaseOrderFormValuesAtom, savePurchaseOrderFormValuesAtom } from '@/atoms/purchaseOrderAtom';
+import { savePurchaseOrderFormValuesAtom } from '@/atoms/purchaseOrderAtom';
 import ComboField from '@/components/ui/ComboField';
 import CommonDatePicker from '@/components/ui/CommonDatePicker';
 import Input from '@/components/ui/elements/Input';
@@ -19,7 +16,6 @@ import Select from '@/components/ui/elements/Select';
 import TextArea from '@/components/ui/elements/TextArea';
 import FormErrorMessage from '@/components/ui/elementSwitchers/FormErrorMessage';
 import TooltipWrapper from '@/components/ui/TooltipWrapper';
-import onPromise from '@/libs/onPromise';
 import { css } from 'styled-system/css';
 
 import FloatingPdfButton from './components/FloatingPdfButton';
@@ -28,48 +24,43 @@ import { productsStorageSchema } from './products.storage.schemas';
 export default function SelectedProducts() {
   const selectedProducts = useAtomValue(selectedProductsAtom);
   const removeProduct = useSetAtom(removeSelectedProductAtom);
-  const inputValues = useAtomValue(purchaseOrderFormValuesAtom);
   const saveInputValues = useSetAtom(savePurchaseOrderFormValuesAtom);
-  const clearInputValues = useSetAtom(clearPurchaseOrderFormValuesAtom);
-  const navigate = useNavigate();
 
   const methods = useForm<ProductsFormValues>({
     mode: 'all',
     resolver: zodResolver(productsStorageSchema),
-    defaultValues: inputValues
-      ? {}
-      : {
-          products: selectedProducts.map((p) => {
-            if (p.is_set_product) {
-              // --- セット商品（setSchema）の場合 ---
-              return {
-                sku_id: p.sku_id,
-                sku_name: p.sku_name,
-                components: false as const,
-                combinations: p.combinations.map(({ combination_id, item_product_short_name, quantity }) => ({
-                  combination_id,
-                  item_product_short_name,
-                  quantity,
-                })),
-                delivery_date: null,
-              };
-            }
-            else {
-              // --- 通常商品（schema）の場合 ---
-              return {
-                sku_id: p.sku_id,
-                sku_name: p.sku_name,
-                components: p.components.map(({ component_id, amount, pieces }) => ({
-                  component_id,
-                  amount,
-                  pieces,
-                })),
-                combinations: false as const,
-                delivery_date: null,
-              };
-            }
-          }),
-        },
+    defaultValues: {
+      products: selectedProducts.map((p) => {
+        if (p.is_set_product) {
+          // --- セット商品（setSchema）の場合 ---
+          return {
+            sku_id: p.sku_id,
+            sku_name: p.sku_name,
+            components: false as const,
+            combinations: p.combinations.map(({ combination_id, item_product_short_name, quantity }) => ({
+              combination_id,
+              item_product_short_name,
+              quantity,
+            })),
+            delivery_date: null,
+          };
+        }
+        else {
+          // --- 通常商品（schema）の場合 ---
+          return {
+            sku_id: p.sku_id,
+            sku_name: p.sku_name,
+            components: p.components.map(({ component_id, amount, pieces }) => ({
+              component_id,
+              amount,
+              pieces,
+            })),
+            combinations: false as const,
+            delivery_date: null,
+          };
+        }
+      }),
+    },
     // 📢重要：アンマウントされたフィールドの値をフォームから除去
     shouldUnregister: true,
   });
@@ -79,27 +70,19 @@ export default function SelectedProducts() {
     rules: { minLength: 1, maxLength: 7 },
   });
 
-  const onSubmit: SubmitHandler<ProductsFormValues> = (values) => {
-    try {
-      saveInputValues(values);
-      Promise.resolve(navigate('/products/fax', { state: values })).catch((err: string) => {
-        throw new Error(err);
-      });
+  const productsErrors = methods.formState.errors.products;
+  const isValid = methods.formState.isValid;
+
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isValid) {
+      e.preventDefault();
     }
-    catch (err: unknown) {
-      console.error('💥💥💥 ', err, ' 💀💀💀');
+    else {
+      console.log(methods.getValues());
+      // O.K.なら保存処理など
+      saveInputValues(methods.getValues());
     }
   };
-
-  const productsErrors = methods.formState.errors.products;
-
-  useEffect(() => {
-    if (inputValues) {
-      methods.reset(inputValues);
-      clearInputValues();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // 納品指定時間
   const specifiedTimes = [{
@@ -389,7 +372,14 @@ export default function SelectedProducts() {
           );
         })}
       </main>
-      <FloatingPdfButton text="PDF を作成" clickHandler={onPromise(methods.handleSubmit(onSubmit))} />
+      <Link
+        to="/products/fax"
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={handleLinkClick}
+      >
+        <FloatingPdfButton text="PDF を作成" isDisabled={!isValid} />
+      </Link>
     </div>
   );
 }

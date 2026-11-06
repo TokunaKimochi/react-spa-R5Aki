@@ -13,6 +13,7 @@ const envSchema = z.object({
     /^(45|49)(\d{5}|\d{7}|\d{8})$/,
     '45または49で始まり、7桁・9桁・10桁の数字である必要があります',
   ),
+  VITE_COMPANY_NAME: z.string().min(2).max(20),
 }).strict();
 
 type Env = z.infer<typeof envSchema>;

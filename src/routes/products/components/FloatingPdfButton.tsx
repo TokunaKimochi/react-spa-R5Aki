@@ -6,9 +6,11 @@ import { css } from 'styled-system/css';
 export default function FloatingPdfButton({
   text,
   clickHandler,
+  isDisabled = false,
 }: {
   text: string;
   clickHandler?: React.MouseEventHandler<HTMLButtonElement>;
+  isDisabled?: boolean;
 }) {
   return (
     <div
@@ -32,6 +34,7 @@ export default function FloatingPdfButton({
         <button
           type="button"
           onClick={clickHandler}
+          disabled={isDisabled}
           className={css({
             display: 'inline-flex',
             alignItems: 'center',
@@ -43,11 +46,13 @@ export default function FloatingPdfButton({
             color: {
               base: 'orange.950',
               _active: { base: 'orange.700', _disabled: 'stone.300' },
+              _disabled: 'stone.200',
             },
             bg: {
               base: 'orange.400',
               _hover: { base: 'orange.500', _disabled: 'stone.200' },
               _active: 'orange.200',
+              _disabled: 'stone.300',
             },
             borderColor: { base: 'orange.500', _disabled: 'stone.300' },
           })}
