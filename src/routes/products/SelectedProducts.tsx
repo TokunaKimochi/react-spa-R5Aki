@@ -36,6 +36,8 @@ export default function SelectedProducts() {
           return {
             sku_id: p.sku_id,
             sku_name: p.sku_name,
+            case_quantity: p.case_quantity,
+            inner_carton_quantity: p.inner_carton_quantity,
             components: false as const,
             combinations: p.combinations.map(({ combination_id, item_product_short_name, quantity }) => ({
               combination_id,
@@ -50,6 +52,8 @@ export default function SelectedProducts() {
           return {
             sku_id: p.sku_id,
             sku_name: p.sku_name,
+            case_quantity: p.case_quantity,
+            inner_carton_quantity: p.inner_carton_quantity,
             components: p.components.map(({ component_id, amount, pieces }) => ({
               component_id,
               amount,
@@ -78,8 +82,6 @@ export default function SelectedProducts() {
       e.preventDefault();
     }
     else {
-      console.log(methods.getValues());
-      // O.K.なら保存処理など
       saveInputValues(methods.getValues());
     }
   };
@@ -119,15 +121,15 @@ export default function SelectedProducts() {
           },
       })}
       >
-        {productsArray.fields.map((field, i) => {
+        {productsArray.fields.map(({ id, sku_id, sku_name, case_quantity, inner_carton_quantity, components, combinations }, i) => {
           const {
             category_color,
             category_color_shade,
             display_category_name,
-          } = selectedProducts.find(sku => sku.sku_id === field.sku_id) ?? {};
+          } = selectedProducts.find(sku => sku.sku_id === sku_id) ?? {};
           return (
             <div
-              key={field.id}
+              key={id}
               className={css({
                 display: 'grid',
                 gridTemplateColumns: '1fr auto auto 1fr 2.25rem',
@@ -172,13 +174,16 @@ export default function SelectedProducts() {
                   })}
                 />
                 <div className={css({ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '1.5rem', pl: '0.725rem', fontSize: 'sm' })}>
-                  {field.components
-                    ? field.components.map(({ component_id, amount, pieces }, j) => (
+                  {components
+                    ? components.map(({ component_id, amount, pieces }, j) => (
                         <div key={component_id}>
                           <input type="hidden" {...methods.register(`products.${i}.components.${j}.component_id` as const)} />
                           <input type="hidden" {...methods.register(`products.${i}.components.${j}.amount` as const)} />
                           <input type="hidden" {...methods.register(`products.${i}.components.${j}.pieces` as const)} />
-                          <span>{`${amount}g × ${pieces}`}</span>
+                          <span>
+                            {`${amount}g`}
+                            {pieces === 1 ? null : ` × ${pieces}`}
+                          </span>
                         </div>
                       ))
                     : (
@@ -188,13 +193,16 @@ export default function SelectedProducts() {
                           {...methods.register(`products.${i}.components` as const)}
                         />
                       )}
-                  {field.combinations
-                    ? field.combinations.map(({ combination_id, item_product_short_name, quantity }, j) => (
+                  {combinations
+                    ? combinations.map(({ combination_id, item_product_short_name, quantity }, j) => (
                         <div key={combination_id}>
                           <input type="hidden" {...methods.register(`products.${i}.combinations.${j}.combination_id` as const)} />
                           <input type="hidden" {...methods.register(`products.${i}.combinations.${j}.item_product_short_name` as const)} />
                           <input type="hidden" {...methods.register(`products.${i}.combinations.${j}.quantity` as const)} />
-                          <span>{`${item_product_short_name} × ${quantity}`}</span>
+                          <span>
+                            {`${item_product_short_name}`}
+                            {quantity === 1 ? null : ` × ${quantity}`}
+                          </span>
                         </div>
                       ))
                     : (
@@ -204,6 +212,13 @@ export default function SelectedProducts() {
                           {...methods.register(`products.${i}.combinations` as const)}
                         />
                       )}
+                  <input type="hidden" {...methods.register(`products.${i}.inner_carton_quantity` as const)} />
+                  <span>{`× ${inner_carton_quantity}`}</span>
+                  <input type="hidden" {...methods.register(`products.${i}.case_quantity` as const)} />
+                  <span>
+                    {'× '}
+                    {inner_carton_quantity ? (case_quantity ?? inner_carton_quantity * inner_carton_quantity) / inner_carton_quantity : case_quantity}
+                  </span>
                 </div>
               </div>
               <div className={css({
@@ -226,8 +241,8 @@ export default function SelectedProducts() {
                   aria-label={`products order unit ${i}`}
                   {...methods.register(`products.${i}.order_unit` as const)}
                 >
-                  <option value="case">ケース</option>
-                  <option value="inner_carton">ボール</option>
+                  {case_quantity ? <option value="case">ケース</option> : null}
+                  {inner_carton_quantity ? <option value="inner_carton">ボール</option> : null}
                   <option value="piece">バラ</option>
                 </Select>
               </div>
@@ -302,7 +317,7 @@ export default function SelectedProducts() {
                       size="1.3rem"
                       onClick={() => {
                         productsArray.remove(i);
-                        removeProduct(field.sku_id);
+                        removeProduct(sku_id);
                       }}
                       className={css({ _hover: { cursor: 'pointer' } })}
                     />
@@ -324,16 +339,18 @@ export default function SelectedProducts() {
                           <TbPencilPlus
                             size="1.3rem"
                             onClick={() => productsArray.append(
-                              ((field) => {
-                                if (field.components === false) {
+                              (() => {
+                                if (components === false) {
                                 // --- セット商品（setSchema）の場合 ---
                                   return {
-                                    sku_id: field.sku_id,
-                                    sku_name: field.sku_name,
+                                    sku_id,
+                                    sku_name,
+                                    case_quantity,
+                                    inner_carton_quantity,
                                     order_quantity: null,
                                     order_unit: 'case',
                                     components: false as const,
-                                    combinations: field.combinations.map(({ combination_id, item_product_short_name, quantity }) => ({
+                                    combinations: combinations.map(({ combination_id, item_product_short_name, quantity }) => ({
                                       combination_id,
                                       item_product_short_name,
                                       quantity,
@@ -345,11 +362,13 @@ export default function SelectedProducts() {
                                 else {
                                 // --- 通常商品（schema）の場合 ---
                                   return {
-                                    sku_id: field.sku_id,
-                                    sku_name: field.sku_name,
+                                    sku_id,
+                                    sku_name,
+                                    case_quantity,
+                                    inner_carton_quantity,
                                     order_quantity: null,
                                     order_unit: 'case',
-                                    components: field.components.map(({ component_id, amount, pieces }) => ({
+                                    components: components.map(({ component_id, amount, pieces }) => ({
                                       component_id,
                                       amount,
                                       pieces,
@@ -359,7 +378,7 @@ export default function SelectedProducts() {
                                     delivery_time_slot: '',
                                   };
                                 }
-                              })(field),
+                              })(),
                             )}
                             className={css({ _hover: { cursor: 'pointer' } })}
                           />

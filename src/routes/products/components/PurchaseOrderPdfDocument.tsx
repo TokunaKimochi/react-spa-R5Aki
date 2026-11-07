@@ -64,10 +64,11 @@ const styles = StyleSheet.create({
   // 行（Row）のスタイル
   tableRow: {
     flexDirection: 'row',
-    minHeight: 35,
+    minHeight: 48,
     alignItems: 'center',
   },
   tableHeaderRow: {
+    minHeight: 32,
     backgroundColor: '#eeeeee',
   },
 
@@ -87,11 +88,11 @@ const styles = StyleSheet.create({
 
   // テキスト
   cellText: {
-    fontSize: 10,
+    fontSize: 14,
     color: '#000000',
   },
   headerText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#000000',
     fontWeight: 'bold',
   },
@@ -103,7 +104,7 @@ Font.register({
   src: '/spa/fonts/NotoSansJP-Medium.ttf',
 });
 
-const headers = ['商品名', '内容量', '数量', '備考', '納品日', '希望時間'] as const;
+const headers = ['品番・品名', '内容量／内容物', '入数', '数量', '備考', '納品日', '希望時間'] as const;
 const FIXED_ROW_COUNT = 7; // 固定の行数
 
 export default function PurchaseOrderPdfDocument() {
@@ -113,7 +114,7 @@ export default function PurchaseOrderPdfDocument() {
   // 固定7行になるように不足分を空のオブジェクトで埋めた配列を作成
   const paddedOrders = [...orders];
   while (paddedOrders.length < FIXED_ROW_COUNT) {
-    paddedOrders.push(null as any);
+    paddedOrders.push(null as never);
   }
 
   // 現在日時のフォーマット（例: 2026年11月6日（金） 13:59 ※24時間制）
@@ -149,7 +150,7 @@ export default function PurchaseOrderPdfDocument() {
       weekday: 'short',
       timeZone: 'Asia/Tokyo',
     }).format(jsDate);
-    const dateString = jsDate.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', dateStyle: 'short' });
+    const dateString = jsDate.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', dateStyle: 'short' }).slice(5);
     return `${dateString}（${weekStr}）`;
   };
 
@@ -195,7 +196,7 @@ export default function PurchaseOrderPdfDocument() {
               ))}
             </View>
 
-            {/* 2. データ行（常に7行分） */}
+            {/* 2. データ行（常に8行分） */}
             {paddedOrders.map((o, cellIndex) => (
               <View style={styles.tableRow} key={`cell-${cellIndex}-${o ? o.sku_id : `empty-${cellIndex}`}`}>
                 <View style={styles.tableCell}>
@@ -208,6 +209,11 @@ export default function PurchaseOrderPdfDocument() {
                     {o
                       ? (o.components ? o.components[0].amount : o.combinations[0].item_product_short_name)
                       : ''}
+                  </Text>
+                </View>
+                <View style={styles.tableCell}>
+                  <Text style={styles.cellText}>
+                    {o ? `${o.case_quantity}` : ''}
                   </Text>
                 </View>
                 <View style={styles.tableCell}>

@@ -26,6 +26,8 @@ const combinationsSchema = z.object({
 const schema = viewSkuDetailsRowSchema.pick({
   sku_id: true,
   sku_name: true,
+  case_quantity: true,
+  inner_carton_quantity: true,
 }).extend({
   order_quantity: z.union([z.coerce.number(), z.literal(null)]).refine(val => val !== 0 && val !== null, { message: '数を入力してください' }),
   order_unit: z.enum(['case', 'inner_carton', 'piece']),
