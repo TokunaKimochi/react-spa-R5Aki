@@ -1,3 +1,4 @@
+import { Button } from 'react-aria-components';
 import { RxPlus } from 'react-icons/rx';
 
 import TooltipWrapper from '@/components/ui/TooltipWrapper';
@@ -27,7 +28,7 @@ export default function FloatingAddButton({
         fillColor="violet.500"
         className={css({ color: 'violet.50', bgColor: 'violet.500', shadow: '2xl' })}
       >
-        <button
+        <Button
           type="button"
           className={css({
             display: 'inline-flex',
@@ -50,7 +51,7 @@ export default function FloatingAddButton({
           })}
         >
           <RxPlus size="1.5rem" className={css({ display: 'inline-block', filter: 'drop-shadow(1px 1px rgba(0, 0, 0, 0.2))' })} />
-        </button>
+        </Button>
       </TooltipWrapper>
     </div>
   );

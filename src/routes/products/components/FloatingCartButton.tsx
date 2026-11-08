@@ -1,3 +1,4 @@
+import { Button } from 'react-aria-components';
 import { FaCartShopping } from 'react-icons/fa6';
 
 import TooltipWrapper from '@/components/ui/TooltipWrapper';
@@ -27,7 +28,7 @@ export default function FloatingCartButton({
         fillColor="orange.400"
         className={css({ color: 'orange.950', bgColor: 'orange.400', shadow: '2xl' })}
       >
-        <button
+        <Button
           type="button"
           className={css({
             display: 'inline-flex',
@@ -50,7 +51,7 @@ export default function FloatingCartButton({
           })}
         >
           <FaCartShopping size="1.5rem" className={css({ display: 'inline-block', filter: 'drop-shadow(1px 1px rgba(255, 255, 255, 0.3))' })} />
-        </button>
+        </Button>
       </TooltipWrapper>
     </div>
   );

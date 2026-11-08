@@ -190,15 +190,17 @@ export default function PurchaseOrderPdfDocument() {
             {/* 1. タイトル行（ヘッダー） */}
             <View style={{ ...styles.tableRow, ...styles.tableHeaderRow }}>
               {headers.map((header, index) => (
+                // eslint-disable-next-line react/no-array-index-key
                 <View style={styles.tableCell} key={`header-${index}`}>
                   <Text style={styles.headerText}>{header}</Text>
                 </View>
               ))}
             </View>
 
-            {/* 2. データ行（常に8行分） */}
+            {/* 2. データ行（常に7行分） */}
             {paddedOrders.map((o, cellIndex) => (
-              <View style={styles.tableRow} key={`cell-${cellIndex}-${o ? o.sku_id : `empty-${cellIndex}`}`}>
+              // eslint-disable-next-line react/no-array-index-key
+              <View style={styles.tableRow} key={`cell-${cellIndex}`}>
                 <View style={styles.tableCell}>
                   <Text style={styles.cellText}>
                     {o ? o.sku_name : ''}

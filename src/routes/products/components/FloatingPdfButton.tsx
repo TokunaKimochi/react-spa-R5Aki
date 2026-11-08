@@ -1,3 +1,6 @@
+import type { PressEvent } from 'react-aria-components';
+
+import { Button } from 'react-aria-components';
 import { FaFilePdf } from 'react-icons/fa';
 
 import TooltipWrapper from '@/components/ui/TooltipWrapper';
@@ -9,7 +12,7 @@ export default function FloatingPdfButton({
   isDisabled = false,
 }: {
   text: string;
-  clickHandler?: React.MouseEventHandler<HTMLButtonElement>;
+  clickHandler?: ((e: PressEvent) => void);
   isDisabled?: boolean;
 }) {
   return (
@@ -31,10 +34,10 @@ export default function FloatingPdfButton({
         fillColor="orange.400"
         className={css({ color: 'orange.950', bgColor: 'orange.400', shadow: '2xl' })}
       >
-        <button
+        <Button
           type="button"
-          onClick={clickHandler}
-          disabled={isDisabled}
+          onPress={clickHandler}
+          isDisabled={isDisabled}
           className={css({
             display: 'inline-flex',
             alignItems: 'center',
@@ -43,6 +46,7 @@ export default function FloatingPdfButton({
             borderWidth: '1px',
             borderRadius: '50%',
             shadow: 'sm',
+            cursor: 'pointer',
             color: {
               base: 'orange.950',
               _active: { base: 'orange.700', _disabled: 'stone.300' },
@@ -58,7 +62,7 @@ export default function FloatingPdfButton({
           })}
         >
           <FaFilePdf size="1.5rem" className={css({ display: 'inline-block', filter: 'drop-shadow(1px 1px rgba(255, 255, 255, 0.3))' })} />
-        </button>
+        </Button>
       </TooltipWrapper>
     </div>
   );

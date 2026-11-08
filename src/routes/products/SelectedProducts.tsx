@@ -78,12 +78,8 @@ export default function SelectedProducts() {
   const isValid = methods.formState.isValid;
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!isValid) {
+    if (!isValid)
       e.preventDefault();
-    }
-    else {
-      saveInputValues(methods.getValues());
-    }
   };
 
   // 納品指定時間
@@ -397,7 +393,7 @@ export default function SelectedProducts() {
         rel="noopener noreferrer"
         onClick={handleLinkClick}
       >
-        <FloatingPdfButton text="PDF を作成" isDisabled={!isValid} />
+        <FloatingPdfButton text="PDF を作成" isDisabled={!isValid} clickHandler={() => saveInputValues(methods.getValues())} />
       </Link>
     </div>
   );

@@ -9,6 +9,7 @@ interface TooltipWrapperProps {
   text: string | React.JSX.Element;
   delay?: number | undefined;
   placement?: TooltipProps['placement'] | undefined;
+  // <button> ではなく React Aria の <Button>
   hasButton?: boolean;
   children: React.JSX.Element;
   className?: string | undefined;
@@ -33,11 +34,13 @@ export default function TooltipWrapper({
 
   return (
     <TooltipTrigger delay={delay}>
-      <Focusable>
-        {hasButton
-          ? children
-          : <span role="button">{children}</span>}
-      </Focusable>
+      {hasButton
+        ? children
+        : (
+            <Focusable>
+              <span role="button">{children}</span>
+            </Focusable>
+          )}
       <Tooltip
         placement={placement}
         className={`react-aria-Tooltip ${className}`}
