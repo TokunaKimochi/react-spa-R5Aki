@@ -48,7 +48,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
     fontWeight: 'bold',
-    fontFamily: 'NotoSansJP',
   },
 
   // テーブル全体のコンテナ
@@ -64,11 +63,11 @@ const styles = StyleSheet.create({
   // 行（Row）のスタイル
   tableRow: {
     flexDirection: 'row',
-    minHeight: 48,
+    minHeight: 49,
     alignItems: 'center',
   },
   tableHeaderRow: {
-    minHeight: 32,
+    minHeight: 31,
     backgroundColor: '#eeeeee',
   },
 
@@ -88,6 +87,8 @@ const styles = StyleSheet.create({
 
   // テキスト
   cellText: {
+    fontFamily: 'BIZUDPGothic',
+    fontWeight: 'bold',
     fontSize: 14,
     color: '#000000',
   },
@@ -100,11 +101,26 @@ const styles = StyleSheet.create({
 
 // 日本語フォントを登録する
 Font.register({
+  family: 'BIZUDPGothic',
+  fonts: [
+    { src: '/spa/fonts/BIZUDPGothic/BIZUDPGothic-Regular.ttf', fontWeight: 400 },
+    { src: '/spa/fonts/BIZUDPGothic/BIZUDPGothic-Bold.ttf', fontWeight: 700 },
+  ],
+});
+Font.register({
   family: 'NotoSansJP',
-  src: '/spa/fonts/NotoSansJP-Medium.ttf',
+  fonts: [
+    { src: '/spa/fonts/NotoSansJP/NotoSansJP-Medium.ttf', fontWeight: 400 },
+    { src: '/spa/fonts/NotoSansJP/NotoSansJP-Bold.ttf', fontWeight: 700 },
+  ],
 });
 
-const headers = ['品番・品名', '内容量／内容物', '入数', '数量', '備考', '納品日', '希望時間'] as const;
+// 単語を1文字ずつに分割し、各文字の後ろに空文字 '' を挟むことで、- を出さずにどの文字の間でも自然に改行
+Font.registerHyphenationCallback(word =>
+  Array.from(word).flatMap(char => [char, '']),
+);
+
+const headers = ['品番・種別・品名', '内容量／内容物', '入数', '荷姿数', '備考', '納品日', '希望時間'] as const;
 const FIXED_ROW_COUNT = 7; // 固定の行数
 
 export default function PurchaseOrderPdfDocument() {
@@ -154,10 +170,62 @@ export default function PurchaseOrderPdfDocument() {
     return `${dateString}（${weekStr}）`;
   };
 
+  // 通常商品の内容量
+  const formatAmount = ({ length, symbol, amount, pieces }: {
+    length: number;
+    symbol: string;
+    amount: string;
+    pieces: number;
+  }) => {
+    const symbolStr = length > 1 ? `${symbol} ` : '';
+    const num = Number(amount);
+    const piecesStr = pieces === 1 ? '' : `×${pieces}`;
+    if (Number.isInteger(num)) {
+      if (num > 999) {
+        const numKg = num / 1000;
+        return `${symbolStr}${numKg}kg${piecesStr}`;
+      }
+    }
+    return `${symbolStr}${num}g${piecesStr}`;
+  };
+
+  const formatSetDetails = (item: string, quantity: number) => {
+    return `${item} × ${quantity}`;
+  };
   // 通常商品の内容量や入数を整えて文字列に
-  /* formatProductPack */
-  // セット商品のセット内容や入数を整えて文字列に
-  /* formatSetPack */
+  const formatPackaging = ({ order_unit, quantity, icQuantity }: {
+    order_unit: 'case' | 'inner_carton' | 'piece';
+    quantity: number | null;
+    icQuantity: number | null;
+  }) => {
+    const caseQuantity = (icQuantity && quantity) ? quantity / icQuantity : quantity;
+    if (order_unit === 'case') {
+      if (icQuantity)
+        return `${icQuantity}×${caseQuantity}`;
+      return quantity;
+    }
+    else if (order_unit === 'inner_carton') {
+      return icQuantity;
+    }
+    return '';
+  };
+
+  // 発注数を整えて文字列に
+  const formatOrderQuantity = (quantity: number, unit: 'case' | 'inner_carton' | 'piece') => {
+    if (unit === 'case')
+      return `${quantity} ケース`;
+    if (unit === 'inner_carton')
+      return `${quantity} ボール`;
+    return `${quantity} 個`;
+  };
+
+  // 希望納品時間を「〇〇まで」に整える
+  const formatTimeSlot = (timeSlot: string) => {
+    if (timeSlot.length !== 3 && timeSlot.length !== 4) {
+      return timeSlot;
+    }
+    return `${timeSlot.slice(0, -2)}:${timeSlot.slice(-2)} まで`;
+  };
 
   // .env から会社名を取得
   const companyName = env.VITE_COMPANY_NAME;
@@ -207,20 +275,48 @@ export default function PurchaseOrderPdfDocument() {
                   </Text>
                 </View>
                 <View style={styles.tableCell}>
+                  {o
+                    ? (
+                        o.components && o.components.length > 0
+                          ? (
+                              o.components.map((c, index) => (
+                                // eslint-disable-next-line react/no-array-index-key
+                                <Text key={index} style={styles.cellText}>
+                                  {formatAmount({
+                                    length: o.components.length,
+                                    symbol: c.symbol,
+                                    amount: c.amount,
+                                    pieces: c.pieces,
+                                  })}
+                                </Text>
+                              ))
+                            )
+                          : o.combinations && o.combinations.length > 0
+                            ? (
+                                o.combinations.map(c => (
+                                  <Text key={c.combination_id} style={styles.cellText}>
+                                    {formatSetDetails(c.item_product_short_name, c.quantity)}
+                                  </Text>
+                                ))
+                              )
+                            : null
+                      )
+                    : null}
+                </View>
+                <View style={styles.tableCell}>
                   <Text style={styles.cellText}>
                     {o
-                      ? (o.components ? o.components[0].amount : o.combinations[0].item_product_short_name)
+                      ? formatPackaging({
+                          order_unit: o.order_unit,
+                          quantity: o.case_quantity,
+                          icQuantity: o.inner_carton_quantity,
+                        })
                       : ''}
                   </Text>
                 </View>
                 <View style={styles.tableCell}>
                   <Text style={styles.cellText}>
-                    {o ? `${o.case_quantity}` : ''}
-                  </Text>
-                </View>
-                <View style={styles.tableCell}>
-                  <Text style={styles.cellText}>
-                    {o ? `${o.order_quantity} ${o.order_unit}` : ''}
+                    {o?.order_quantity ? formatOrderQuantity(o.order_quantity, o.order_unit) : ''}
                   </Text>
                 </View>
                 <View style={styles.tableCell}>
@@ -237,7 +333,7 @@ export default function PurchaseOrderPdfDocument() {
                 </View>
                 <View style={styles.tableCell}>
                   <Text style={styles.cellText}>
-                    {o ? o.delivery_time_slot : ''}
+                    {o ? formatTimeSlot(o.delivery_time_slot) : ''}
                   </Text>
                 </View>
               </View>

@@ -54,8 +54,9 @@ export default function SelectedProducts() {
             sku_name: p.sku_name,
             case_quantity: p.case_quantity,
             inner_carton_quantity: p.inner_carton_quantity,
-            components: p.components.map(({ component_id, amount, pieces }) => ({
+            components: p.components.map(({ component_id, symbol, amount, pieces }) => ({
               component_id,
+              symbol,
               amount,
               pieces,
             })),
@@ -174,6 +175,7 @@ export default function SelectedProducts() {
                     ? components.map(({ component_id, amount, pieces }, j) => (
                         <div key={component_id}>
                           <input type="hidden" {...methods.register(`products.${i}.components.${j}.component_id` as const)} />
+                          <input type="hidden" {...methods.register(`products.${i}.components.${j}.symbol` as const)} />
                           <input type="hidden" {...methods.register(`products.${i}.components.${j}.amount` as const)} />
                           <input type="hidden" {...methods.register(`products.${i}.components.${j}.pieces` as const)} />
                           <span>
@@ -364,8 +366,9 @@ export default function SelectedProducts() {
                                     inner_carton_quantity,
                                     order_quantity: null,
                                     order_unit: 'case',
-                                    components: components.map(({ component_id, amount, pieces }) => ({
+                                    components: components.map(({ component_id, symbol, amount, pieces }) => ({
                                       component_id,
+                                      symbol,
                                       amount,
                                       pieces,
                                     })),
