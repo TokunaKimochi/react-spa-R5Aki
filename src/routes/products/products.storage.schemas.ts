@@ -8,6 +8,7 @@ const componentsSchema = z.object({
   components: z.array(
     viewProductComponentsRowSchema.pick({
       component_id: true,
+      symbol: true,
       amount: true,
       pieces: true,
     }),
@@ -35,7 +36,24 @@ const schema = viewSkuDetailsRowSchema.pick({
     (val): val is CalendarDate | null => val !== undefined && val !== null,
     { message: '納期を指定してください' },
   ),
-  delivery_time_slot: z.string({ message: '時間を指定してください' }).min(4, { message: '時間を指定してください' }).max(32),
+  delivery_time_slot: z.preprocess(
+    (val) => {
+      if (typeof val !== 'string')
+        return val;
+
+      return val
+      // 全角 => 半角
+        .normalize('NFKC')
+        .replace(/\D/g, '');
+    },
+    z
+      .string({
+        required_error: '時間を指定してください',
+        invalid_type_error: '時間を指定してください',
+      })
+      .min(3, '時間を指定してください')
+      .max(4, '時間を指定してください'),
+  ),
   remark: z.string().max(32).optional(),
   ...componentsSchema.shape,
   combinations: z.literal(false),
