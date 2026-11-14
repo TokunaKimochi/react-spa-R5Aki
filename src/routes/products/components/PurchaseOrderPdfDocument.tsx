@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
 
   // ヘッダー情報用のスタイル
   headerInfoContainer: {
-    marginBottom: 10,
+    marginBottom: 6,
   },
   companyNameRow: {
     flexDirection: 'row',
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   metaText: {
     fontSize: 14,
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 22,
-    marginBottom: 20,
+    marginBottom: 18,
     textAlign: 'center',
     fontWeight: 'bold',
   },
@@ -63,11 +63,11 @@ const styles = StyleSheet.create({
   // 行（Row）のスタイル
   tableRow: {
     flexDirection: 'row',
-    minHeight: 49,
+    minHeight: 50,
     alignItems: 'center',
   },
   tableHeaderRow: {
-    minHeight: 31,
+    minHeight: 30,
     backgroundColor: '#eeeeee',
   },
 
@@ -83,6 +83,44 @@ const styles = StyleSheet.create({
     borderBottomColor: '#000000',
     borderStyle: 'solid',
     padding: 4,
+  },
+
+  // 一番左のセル専用のスタイル（上下に要素を分散配置）
+  firstTableCell: {
+    flex: 1,
+    height: '100%',
+    justifyContent: 'space-between',
+    borderRightWidth: 1.5,
+    borderBottomWidth: 1.5,
+    borderRightColor: '#000000',
+    borderBottomColor: '#000000',
+    borderStyle: 'solid',
+    padding: 4,
+  },
+  // 左上・右上配置用の行コンテナ
+  topRowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  topLeftText: {
+    fontFamily: 'BIZUDPGothic',
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  topRightText: {
+    fontFamily: 'BIZUDPGothic',
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: '#000000',
+    backgroundColor: '#eeeeee',
+  },
+  // 中央配置用のコンテナ
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   // テキスト
@@ -121,6 +159,7 @@ Font.registerHyphenationCallback(word =>
 );
 
 const headers = ['品番・種別・品名', '内容量／内容物', '入数', '荷姿数', '備考', '納品日', '希望時間'] as const;
+const columnFlex = [1.2, 0.8, 0.7, 0.7, 1.9, 0.8, 0.8] as const;
 const FIXED_ROW_COUNT = 7; // 固定の行数
 
 export default function PurchaseOrderPdfDocument() {
@@ -259,7 +298,7 @@ export default function PurchaseOrderPdfDocument() {
             <View style={{ ...styles.tableRow, ...styles.tableHeaderRow }}>
               {headers.map((header, index) => (
                 // eslint-disable-next-line react/no-array-index-key
-                <View style={styles.tableCell} key={`header-${index}`}>
+                <View style={[styles.tableCell, { flex: columnFlex[index] }]} key={`header-${index}`}>
                   <Text style={styles.headerText}>{header}</Text>
                 </View>
               ))}
@@ -269,12 +308,29 @@ export default function PurchaseOrderPdfDocument() {
             {paddedOrders.map((o, cellIndex) => (
               // eslint-disable-next-line react/no-array-index-key
               <View style={styles.tableRow} key={`cell-${cellIndex}`}>
-                <View style={styles.tableCell}>
-                  <Text style={styles.cellText}>
-                    {o ? o.sku_name : ''}
-                  </Text>
+
+                {/* 1番目のセル：品番・種別・品名（左上・右上・中央に配置） */}
+                <View style={[styles.firstTableCell, { flex: columnFlex[0] }]}>
+                  <View style={styles.topRowContainer}>
+                    {/* 左上（例: 品番コードなど） */}
+                    <Text style={styles.topLeftText}>
+                      35114
+                      {/* {o ? o.sku_code : ''} */}
+                    </Text>
+                    {/* 右上（例: 種別など） */}
+                    <Text style={styles.topRightText}>
+                      グリーンティー他
+                      {/* {o ? o.sku_type : ''} */}
+                    </Text>
+                  </View>
+                  <View style={styles.centerContainer}>
+                    {/* 中央：メインのSKU名 */}
+                    <Text style={styles.cellText}>{o ? o.sku_name : ''}</Text>
+                  </View>
                 </View>
-                <View style={styles.tableCell}>
+
+                {/* 2番目以降のセル */}
+                <View style={[styles.tableCell, { flex: columnFlex[1] }]}>
                   {o
                     ? (
                         o.components && o.components.length > 0
@@ -303,7 +359,7 @@ export default function PurchaseOrderPdfDocument() {
                       )
                     : null}
                 </View>
-                <View style={styles.tableCell}>
+                <View style={[styles.tableCell, { flex: columnFlex[2] }]}>
                   <Text style={styles.cellText}>
                     {o
                       ? formatPackaging({
@@ -314,24 +370,24 @@ export default function PurchaseOrderPdfDocument() {
                       : ''}
                   </Text>
                 </View>
-                <View style={styles.tableCell}>
+                <View style={[styles.tableCell, { flex: columnFlex[3] }]}>
                   <Text style={styles.cellText}>
                     {o?.order_quantity ? formatOrderQuantity(o.order_quantity, o.order_unit) : ''}
                   </Text>
                 </View>
-                <View style={styles.tableCell}>
+                <View style={[styles.tableCell, { flex: columnFlex[4] }]}>
                   <Text style={styles.cellText}>
                     {o ? o.remark : ''}
                   </Text>
                 </View>
-                <View style={styles.tableCell}>
+                <View style={[styles.tableCell, { flex: columnFlex[5] }]}>
                   <Text style={styles.cellText}>
                     {o?.delivery_date?.year && o.delivery_date?.month && o.delivery_date?.day
                       ? deliveryDateStr(o.delivery_date)
                       : ''}
                   </Text>
                 </View>
-                <View style={styles.tableCell}>
+                <View style={[styles.tableCell, { flex: columnFlex[6] }]}>
                   <Text style={styles.cellText}>
                     {o ? formatTimeSlot(o.delivery_time_slot) : ''}
                   </Text>
