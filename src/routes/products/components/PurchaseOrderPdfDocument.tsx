@@ -1,5 +1,4 @@
-import type { CalendarDate } from '@internationalized/date';
-
+import { CalendarDate, today } from '@internationalized/date';
 import { Document, Font, Page, PDFViewer, StyleSheet, Text, View } from '@react-pdf/renderer';
 import { useAtomValue } from 'jotai';
 
@@ -165,9 +164,15 @@ const FIXED_ROW_COUNT = 7; // 固定の行数
 export default function PurchaseOrderPdfDocument() {
   const inputValues = useAtomValue(purchaseOrderFormValuesAtom);
   const orders = productsStorageSchema.parse(inputValues).products;
+  const replaceWithDataTypesOrders = orders.map(order => ({
+    ...order,
+    delivery_date: new CalendarDate(order.delivery_date?.year ?? 1970, order.delivery_date?.month ?? 1, order.delivery_date?.day ?? 1,
+    ),
+    delivery_time_slot: Number(order.delivery_time_slot),
+  }));
 
   // 固定7行になるように不足分を空のオブジェクトで埋めた配列を作成
-  const paddedOrders = [...orders];
+  const paddedOrders = [...replaceWithDataTypesOrders].sort((a, b) => a.delivery_date?.compare(b.delivery_date) || a.delivery_time_slot - b.delivery_time_slot);
   while (paddedOrders.length < FIXED_ROW_COUNT) {
     paddedOrders.push(null as never);
   }
@@ -199,8 +204,11 @@ export default function PurchaseOrderPdfDocument() {
 
   // 納品日のフォーマット
   const deliveryDateStr = (date: CalendarDate) => {
-    const dateStr = `${date.year}-${date.month}-${date.day}`;
-    const jsDate = new Date(dateStr);
+    const thisDay = today('Asia/Tokyo');
+    // thisDay（今日）が date より後（> 0）であれば、date は過去
+    if (thisDay.compare(date) > 0)
+      return 'ERROR!';
+    const jsDate = date.toDate('Asia/Tokyo');
     const weekStr = new Intl.DateTimeFormat('ja-JP', {
       weekday: 'short',
       timeZone: 'Asia/Tokyo',
@@ -259,7 +267,8 @@ export default function PurchaseOrderPdfDocument() {
   };
 
   // 希望納品時間を「〇〇まで」に整える
-  const formatTimeSlot = (timeSlot: string) => {
+  const formatTimeSlot = (time: number) => {
+    const timeSlot = time.toString();
     if (timeSlot.length !== 3 && timeSlot.length !== 4) {
       return timeSlot;
     }
@@ -312,15 +321,13 @@ export default function PurchaseOrderPdfDocument() {
                 {/* 1番目のセル：品番・種別・品名（左上・右上・中央に配置） */}
                 <View style={[styles.firstTableCell, { flex: columnFlex[0] }]}>
                   <View style={styles.topRowContainer}>
-                    {/* 左上（例: 品番コードなど） */}
+                    {/* 左上（品番） */}
                     <Text style={styles.topLeftText}>
-                      35114
-                      {/* {o ? o.sku_code : ''} */}
+                      {o?.jan_code ? o.internal_code ?? '-----' : ''}
                     </Text>
-                    {/* 右上（例: 種別など） */}
+                    {/* 右上（カテゴリー） */}
                     <Text style={styles.topRightText}>
-                      グリーンティー他
-                      {/* {o ? o.sku_type : ''} */}
+                      {o ? o.display_category_name : ''}
                     </Text>
                   </View>
                   <View style={styles.centerContainer}>

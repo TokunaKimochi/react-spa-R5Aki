@@ -38,6 +38,8 @@ export default function SelectedProducts() {
             sku_name: p.sku_name,
             case_quantity: p.case_quantity,
             inner_carton_quantity: p.inner_carton_quantity,
+            internal_code: p.internal_code,
+            jan_code: p.jan_code,
             components: false as const,
             combinations: p.combinations.map(({ combination_id, item_product_short_name, quantity }) => ({
               combination_id,
@@ -54,6 +56,8 @@ export default function SelectedProducts() {
             sku_name: p.sku_name,
             case_quantity: p.case_quantity,
             inner_carton_quantity: p.inner_carton_quantity,
+            internal_code: p.internal_code,
+            jan_code: p.jan_code,
             components: p.components.map(({ component_id, symbol, amount, pieces }) => ({
               component_id,
               symbol,
@@ -118,7 +122,7 @@ export default function SelectedProducts() {
           },
       })}
       >
-        {productsArray.fields.map(({ id, sku_id, sku_name, case_quantity, inner_carton_quantity, components, combinations }, i) => {
+        {productsArray.fields.map(({ id, sku_id, sku_name, case_quantity, inner_carton_quantity, internal_code, jan_code, components, combinations }, i) => {
           const {
             category_color,
             category_color_shade,
@@ -145,6 +149,7 @@ export default function SelectedProducts() {
             >
               <div>
                 <input type="hidden" {...methods.register(`products.${i}.sku_id` as const)} />
+                <input type="hidden" {...methods.register(`products.${i}.display_category_name` as const)} defaultValue={display_category_name} />
                 <span className={css({
                   h: '1.6em',
                   lineHeight: '1.44em',
@@ -218,6 +223,8 @@ export default function SelectedProducts() {
                     {inner_carton_quantity ? (case_quantity ?? inner_carton_quantity * inner_carton_quantity) / inner_carton_quantity : case_quantity}
                   </span>
                 </div>
+                <input type="hidden" {...methods.register(`products.${i}.internal_code` as const)} />
+                <input type="hidden" {...methods.register(`products.${i}.jan_code` as const)} />
               </div>
               <div className={css({
                 display: 'flex',
@@ -345,6 +352,9 @@ export default function SelectedProducts() {
                                     sku_name,
                                     case_quantity,
                                     inner_carton_quantity,
+                                    display_category_name: display_category_name ?? '？取得失敗！',
+                                    internal_code,
+                                    jan_code,
                                     order_quantity: null,
                                     order_unit: 'case',
                                     components: false as const,
@@ -364,6 +374,9 @@ export default function SelectedProducts() {
                                     sku_name,
                                     case_quantity,
                                     inner_carton_quantity,
+                                    display_category_name: display_category_name ?? '？取得失敗！',
+                                    internal_code,
+                                    jan_code,
                                     order_quantity: null,
                                     order_unit: 'case',
                                     components: components.map(({ component_id, symbol, amount, pieces }) => ({

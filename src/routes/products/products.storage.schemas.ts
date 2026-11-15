@@ -29,6 +29,9 @@ const schema = viewSkuDetailsRowSchema.pick({
   sku_name: true,
   case_quantity: true,
   inner_carton_quantity: true,
+  display_category_name: true,
+  internal_code: true,
+  jan_code: true,
 }).extend({
   order_quantity: z.union([z.coerce.number(), z.literal(null)]).refine(val => val !== 0 && val !== null, { message: '数を入力してください' }),
   order_unit: z.enum(['case', 'inner_carton', 'piece']),
@@ -36,7 +39,7 @@ const schema = viewSkuDetailsRowSchema.pick({
     (val): val is CalendarDate | null => val !== undefined && val !== null,
     { message: '納期を指定してください' },
   ),
-  delivery_time_slot: z.preprocess(
+  delivery_time_slot: z.string().pipe(z.preprocess(
     (val) => {
       if (typeof val !== 'string')
         return val;
@@ -53,8 +56,8 @@ const schema = viewSkuDetailsRowSchema.pick({
       })
       .min(3, '時間を指定してください')
       .max(4, '時間を指定してください'),
-  ),
-  remark: z.string().max(32).optional(),
+  )),
+  remark: z.string().max(39).optional(),
   ...componentsSchema.shape,
   combinations: z.literal(false),
 });
