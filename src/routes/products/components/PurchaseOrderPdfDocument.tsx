@@ -66,8 +66,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tableHeaderRow: {
-    minHeight: 30,
-    backgroundColor: '#eeeeee',
+    minHeight: 29,
+    backgroundColor: '#efefef',
   },
 
   // セル（Cell）のスタイル

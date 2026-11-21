@@ -16,12 +16,6 @@ interface FloatingLinkIconProps {
 export default function FloatingLinkIcon({ relativePath, size, title, iconType }: FloatingLinkIconProps): React.JSX.Element {
   const iconSwitcher = (type: FloatingLinkIconProps['iconType'], title: string, size: string) => {
     const style = css.raw({
-      pos: 'fixed',
-      top: '0.725rem',
-      left: '0.725rem',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
       p: '0.125rem',
       borderRadius: '50%',
       boxShadow: '2xl',
@@ -77,7 +71,17 @@ export default function FloatingLinkIcon({ relativePath, size, title, iconType }
 
   return (
     <Link to={relativePath} relative="path">
-      {iconSwitcher(iconType, title, size)}
+      <div className={css({
+        pos: 'fixed',
+        top: '0.725rem',
+        left: '0.725rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      })}
+      >
+        {iconSwitcher(iconType, title, size)}
+      </div>
     </Link>
   );
 }

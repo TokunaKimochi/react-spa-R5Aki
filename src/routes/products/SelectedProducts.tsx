@@ -15,6 +15,7 @@ import Input from '@/components/ui/elements/Input';
 import Select from '@/components/ui/elements/Select';
 import TextArea from '@/components/ui/elements/TextArea';
 import FormErrorMessage from '@/components/ui/elementSwitchers/FormErrorMessage';
+import FloatingLinkIcon from '@/components/ui/FloatingLinkIcon';
 import TooltipWrapper from '@/components/ui/TooltipWrapper';
 import { css } from 'styled-system/css';
 
@@ -102,6 +103,7 @@ export default function SelectedProducts() {
 
   return (
     <div className={css({ h: '100lvh', display: 'grid', placeItems: 'center' })}>
+      <FloatingLinkIcon relativePath="/products" size="2rem" title="商品一覧に戻る" iconType="eye" />
       <main className={css({
         maxW: 'calc(100svw - 1rem)',
         borderRadius: 'lg',
@@ -346,7 +348,7 @@ export default function SelectedProducts() {
                             onClick={() => productsArray.append(
                               (() => {
                                 if (components === false) {
-                                // --- セット商品（setSchema）の場合 ---
+                                  // --- セット商品（setSchema）の場合 ---
                                   return {
                                     sku_id,
                                     sku_name,
@@ -368,7 +370,7 @@ export default function SelectedProducts() {
                                   };
                                 }
                                 else {
-                                // --- 通常商品（schema）の場合 ---
+                                  // --- 通常商品（schema）の場合 ---
                                   return {
                                     sku_id,
                                     sku_name,

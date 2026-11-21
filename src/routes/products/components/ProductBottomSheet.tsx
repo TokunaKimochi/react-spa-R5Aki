@@ -161,8 +161,14 @@ export default function ProductBottomSheet(p: ProductBottomSheetProps) {
               type="button"
               onClick={() => {
                 return isSelected
-                  ? removeProduct(p.sku_id)
-                  : selectProduct(productForSelection);
+                  ? (() => {
+                      removeProduct(p.sku_id);
+                      setSelectedItem(-1);
+                    })()
+                  : (() => {
+                      selectProduct(productForSelection);
+                      setSelectedItem(-1);
+                    })();
               }}
               className={css({
                 bg: isSelected ? 'orange.400' : 'slate.700',
