@@ -33,7 +33,7 @@ const schema = viewSkuDetailsRowSchema.pick({
   internal_code: true,
   jan_code: true,
 }).extend({
-  order_quantity: z.union([z.coerce.number(), z.literal(null)]).refine(val => val !== 0 && val !== null, { message: '数を入力してください' }),
+  order_quantity: z.union([z.coerce.number(), z.literal(null)]).refine(val => val !== null && val > 0, { message: '数を入力してください' }),
   order_unit: z.enum(['case', 'inner_carton', 'piece']),
   delivery_date: z.custom<CalendarDate | null>().refine(
     (val): val is CalendarDate | null => val !== undefined && val !== null,
