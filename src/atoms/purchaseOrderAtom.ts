@@ -19,7 +19,7 @@ const purchaseOrderFormValuesStorageAtom = atomWithStorage<ProductsFormValues | 
 /** 保存済みの RHF 入力値を取得する。未保存の場合は null。 */
 export const purchaseOrderFormValuesAtom = atom(get => get(purchaseOrderFormValuesStorageAtom));
 
-/** RHF の現在の入力値をセッションストレージへ保存する。 */
+/** RHF の現在の入力値をローカルストレージへ保存する。 */
 export const savePurchaseOrderFormValuesAtom = atom(
   null,
   (_get, set, values: ProductsFormValues) => set(purchaseOrderFormValuesStorageAtom, values),

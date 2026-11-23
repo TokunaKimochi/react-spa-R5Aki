@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { today } from '@internationalized/date';
 import { useAtomValue, useSetAtom } from 'jotai';
+import { useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { TbPencilPlus, TbTrash } from 'react-icons/tb';
 import { Link } from 'react-router';
@@ -20,12 +21,16 @@ import TooltipWrapper from '@/components/ui/TooltipWrapper';
 import { css } from 'styled-system/css';
 
 import FloatingPdfButton from './components/FloatingPdfButton';
+import { useRegisterProductsOrder } from './components/hooks/useRegisterProductsOrder';
+import PurchaseOrderHistoryConfirmationDialog from './components/PurchaseOrderHistoryConfirmationDialog';
 import { productsStorageSchema } from './products.storage.schemas';
 
 export default function SelectedProducts() {
   const selectedProducts = useAtomValue(selectedProductsAtom);
   const removeProduct = useSetAtom(removeSelectedProductAtom);
   const saveInputValues = useSetAtom(savePurchaseOrderFormValuesAtom);
+  const [isPurchaseOrderHistoryConfirmationOpen, setIsPurchaseOrderHistoryConfirmationOpen] = useState(false);
+  const [purchaseOrderToRegister, setPurchaseOrderToRegister] = useState<ProductsFormValues | null>(null);
 
   const methods = useForm<ProductsFormValues>({
     mode: 'all',
@@ -82,10 +87,24 @@ export default function SelectedProducts() {
 
   const productsErrors = methods.formState.errors.products;
   const isValid = methods.formState.isValid;
+  const { registerProductsOrder, isRegisteringProductsOrder } = useRegisterProductsOrder();
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleCreatePurchaseOrderPdf = () => {
     if (!isValid)
-      e.preventDefault();
+      return;
+
+    const purchaseOrderValues = methods.getValues();
+    saveInputValues(purchaseOrderValues);
+    setPurchaseOrderToRegister(purchaseOrderValues);
+    window.setTimeout(() => setIsPurchaseOrderHistoryConfirmationOpen(true), 200);
+  };
+
+  const handleRegisterPurchaseOrderHistory = async () => {
+    if (!purchaseOrderToRegister)
+      return;
+
+    await registerProductsOrder(purchaseOrderToRegister);
+    setIsPurchaseOrderHistoryConfirmationOpen(false);
   };
 
   // 納品指定時間
@@ -409,10 +428,26 @@ export default function SelectedProducts() {
         to="/products/fax"
         target="_blank"
         rel="noopener noreferrer"
-        onClick={handleLinkClick}
+        onClick={(e) => {
+          if (!isValid)
+            e.preventDefault();
+        }}
+        className={css({ cursor: 'default' })}
       >
-        <FloatingPdfButton text="PDF を作成" isDisabled={!isValid} clickHandler={() => saveInputValues(methods.getValues())} />
+        <FloatingPdfButton
+          text="PDF を作成"
+          isDisabled={!isValid}
+          clickHandler={handleCreatePurchaseOrderPdf}
+        />
       </Link>
+      <PurchaseOrderHistoryConfirmationDialog
+        isOpen={isPurchaseOrderHistoryConfirmationOpen}
+        isRegistering={isRegisteringProductsOrder}
+        onOpenChange={setIsPurchaseOrderHistoryConfirmationOpen}
+        onConfirm={() => {
+          void handleRegisterPurchaseOrderHistory();
+        }}
+      />
     </div>
   );
 }
