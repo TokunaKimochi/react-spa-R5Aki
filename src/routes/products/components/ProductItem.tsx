@@ -69,6 +69,10 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
       ? css.raw({ fontSize: '2.5rem' })
       : css.raw({ fontSize: '2rem' });
 
+  const productNameW = p.is_set_product
+    ? css.raw({ w: 'calc(15rem - 1.325rem)' })
+    : css.raw({ w: '15rem' });
+
   return (
     <article
       className={css({
@@ -175,7 +179,8 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
         </figure>
         <div className={css({
           px: '0.5rem',
-          py: '0.725rem',
+          pt: '0.725rem',
+          pb: '1rem',
           fontSize: '0.85rem',
           fontWeight: 'bold',
           alignSelf: 'last baseline',
@@ -187,7 +192,7 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
             <span className={css({ textShadow: 'rgba(255, 255, 255, 0.2) 1px 1px', transform: 'rotate(-7.5deg) translateY(-0.2rem)', display: 'inline-block' })}>
               {p.sku_name}
             </span>
-            <span className={css({ flexGrow: 1, flexShrink: 0, minW: '3rem', containerType: 'inline-size', containerName: 'meta-box' })}>
+            <span className={css({ flexGrow: 1, flexShrink: 0, minW: '5ic', containerType: 'inline-size', containerName: 'meta-box' })}>
               <span className={css({ display: 'flex', alignItems: 'center', w: 'fit-content', maxW: '100%', justifyContent: 'flex-start', '@container meta-box (width >= 14rem)': { ml: 'auto', justifyContent: 'flex-end', w: '100%' } })}>
                 <span className={css({ h: '1.6em', lineHeight: '1.44em', bgColor: 'var(--cat-color-light)', verticalAlign: 'super', fontSize: '0.625em', ml: '0.4em', px: '0.25em', py: '0.125em' })}>{p.display_category_name}</span>
                 <span className={css({ ml: '0.25rem' })}>
@@ -197,8 +202,19 @@ export default function ProductItem(p: ViewSkuDetailsRow & {
             </span>
           </h2>
           <p className={css({ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' })}>
-            {p.is_set_product ? <BiSolidGift size="1.375em" /> : null}
-            <span>{p.product_name}</span>
+            {p.is_set_product ? <BiSolidGift size="1.2rem" /> : null}
+            <span className={css(
+              productNameW,
+              {
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              },
+            )}
+            >
+              {p.product_name}
+            </span>
             {p.case_quantity
               ? (
                   <span className={css({ pos: 'absolute', display: 'inline-block', bottom: '0.025rem', right: '0.375rem', pointerEvents: 'none', fontFamily: '"Time New Roman",sans-serif' })}>
