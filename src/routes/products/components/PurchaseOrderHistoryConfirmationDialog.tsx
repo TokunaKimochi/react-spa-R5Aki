@@ -56,7 +56,32 @@ export default function PurchaseOrderHistoryConfirmationDialog({
               FAX の内容を確認して問題なければ、今回の発注を履歴として登録します。
             </p>
           </div>
-          <div className={css({ display: 'flex', justifyContent: 'end', gap: '0.75rem' })}>
+          <div className={css({ display: 'flex', flexDir: 'column', gap: '0.75rem' })}>
+            <Button
+              isDisabled={isRegistering}
+              onPress={onConfirm}
+              className={css({
+                px: '1rem',
+                py: '0.625rem',
+                color: {
+                  base: 'teal.950',
+                  _active: { base: 'teal.100', _disabled: 'stone.300' },
+                  _disabled: 'stone.300',
+                },
+                bg: {
+                  base: 'teal.400',
+                  _hover: { base: 'teal.300', _disabled: 'stone.200' },
+                  _active: 'teal.600',
+                  _disabled: 'stone.200',
+                },
+                borderRadius: 'md',
+                fontWeight: 'bold',
+                textShadow: 'rgba(255, 255, 255, 0.3) 1px 1px',
+                cursor: 'pointer',
+              })}
+            >
+              {isRegistering ? '登録中…' : '履歴に記録する'}
+            </Button>
             <Button
               isDisabled={isRegistering}
               onPress={() => onOpenChange(false)}
@@ -71,21 +96,6 @@ export default function PurchaseOrderHistoryConfirmationDialog({
               })}
             >
               今回は記録しない
-            </Button>
-            <Button
-              isDisabled={isRegistering}
-              onPress={onConfirm}
-              className={css({
-                px: '1rem',
-                py: '0.625rem',
-                color: 'white',
-                bg: { base: 'orange.500', _hover: 'orange.600', _active: 'orange.700' },
-                borderRadius: 'md',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-              })}
-            >
-              {isRegistering ? '登録中…' : '履歴に記録する'}
             </Button>
           </div>
         </Dialog>
